@@ -22,6 +22,7 @@ from heat.engine import environment
 from heat.common import exception
 from heat.engine import dependencies
 from heat.common import identifier
+from heat.engine import notification
 from heat.engine import resource
 from heat.engine import resources
 from heat.engine import scheduler
@@ -342,6 +343,7 @@ class Stack(object):
         stack.update_and_save({'action': action,
                                'status': status,
                                'status_reason': reason})
+        notification.send(self)
 
     @property
     def state(self):
