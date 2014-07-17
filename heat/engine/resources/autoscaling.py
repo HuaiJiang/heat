@@ -32,6 +32,8 @@ from heat.openstack.common import excutils
 from heat.openstack.common import log as logging
 from heat.openstack.common import timeutils
 from heat.scaling import template
+from heat.openstack.common.gettextutils import _
+
 
 logger = logging.getLogger(__name__)
 
@@ -197,9 +199,14 @@ class InstanceGroup(stack_resource.StackResource):
         """
         resources = []
         if self.nested():
+            logger.debug(_("inside of get_instances begin interation "))
             resources = [resource for resource in self.nested().itervalues()
                          if resource.status != resource.FAILED]
-        return sorted(resources, key=lambda r: (r.created_time, r.name))
+            logger.debug(_("inside of get_instances end interation "))
+            result = sorted(resources, key=lambda r: (r.created_time, r.name))
+            logger.debug(_("inside of get_instances end sort "))
+            resources = result
+        return resources
 
     def _environment(self):
         """Return the environment for the nested stack."""

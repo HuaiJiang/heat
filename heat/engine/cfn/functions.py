@@ -19,6 +19,11 @@ from heat.api.aws import utils as aws_utils
 from heat.common import exception
 
 from heat.engine import function
+from heat.openstack.common.gettextutils import _
+
+from heat.openstack.common import log as logging
+
+logger = logging.getLogger(__name__)
 
 
 class FindInMap(function.Function):
@@ -161,9 +166,14 @@ class GetAtt(function.Function):
                 key=function.resolve(self._attribute))
 
     def result(self):
+        logger.debug(_(" cfn functions result start   " ))
+
         attribute = function.resolve(self._attribute)
+        logger.debug(_(" cfn functions resolve _attribute %s ,result is %s  " %(self._attribute,attribute) ))
 
         r = self._resource()
+        logger.debug(_(" cfn functions get result  %s  " %(r)))
+
         if (r.status in (r.IN_PROGRESS, r.COMPLETE) and
                 r.action in (r.CREATE, r.ADOPT, r.SUSPEND, r.RESUME,
                              r.UPDATE)):

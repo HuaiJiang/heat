@@ -20,7 +20,8 @@ which then calls into this engine.
 """
 
 import eventlet
-eventlet.monkey_patch()
+eventlet.monkey_patch(all=False,socket=True,time=True,os=False)
+#eventlet.monkey_patch()
 
 import os
 import sys

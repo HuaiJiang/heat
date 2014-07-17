@@ -54,6 +54,7 @@ class Stack(collections.Mapping):
                 ) = ('IN_PROGRESS', 'FAILED', 'COMPLETE')
 
     _zones = None
+    _cachedTemplate={}
 
     def __init__(self, context, stack_name, tmpl, env=None,
                  stack_id=None, action=None, status=None,
@@ -184,8 +185,20 @@ class Stack(collections.Mapping):
         if stack is None:
             message = _('No stack exists with id "%s"') % str(stack_id)
             raise exception.NotFound(message)
-
-        template = Template.load(context, stack.raw_template_id)
+        try:
+            logger.error(_("get template for %s stack %s template id!") % (stack.name,stack.raw_template_id))
+            if cls._cachedTemplate.has_key(stack.raw_template_id):
+                template = cls._cachedTemplate[stack.raw_template_id]
+                logger.error(_("get template from cache  %s ") % (template))
+            else:
+                template = Template.load(context, stack.raw_template_id)
+                logger.error(_("load template from db  %s ") % (stack.raw_template_id))
+                cls._cachedTemplate[stack.raw_template_id]=template
+                logger.error(_("save template to cache  %s ") % (stack.raw_template_id))
+        except Exception as ex:
+            logger.error(_("Unexpected exception %s passed to delete!") % ex)
+            raise ex
+        #template = Template.load(context, stack.raw_template_id)
         env = environment.Environment(stack.parameters)
         stack = cls(context, stack.name, template, env,
                     stack.id, stack.action, stack.status, stack.status_reason,
@@ -730,6 +743,7 @@ class Stack(collections.Mapping):
         Get the value of the specified stack output.
         '''
         value = self.outputs[key].get('Value', '')
+        logger.debug(_("resolve runt time data start " ))
         return self.resolve_runtime_data(value)
 
     def restart_resource(self, resource_name):

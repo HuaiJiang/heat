@@ -135,6 +135,7 @@ class Resource(object):
         # Select the correct subclass to instantiate
         ResourceClass = stack.env.get_class(json.get('Type'),
                                             resource_name=name)
+        print("resource class %s" %ResourceClass)
         return ResourceClass(name, json, stack)
 
     def __init__(self, name, json_snippet, stack):

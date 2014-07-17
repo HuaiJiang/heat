@@ -17,6 +17,11 @@ from heat.common import exception
 
 from heat.engine.cfn import functions as cfn_funcs
 from heat.engine import function
+from heat.openstack.common.gettextutils import _
+
+from heat.openstack.common import log as logging
+
+logger = logging.getLogger(__name__)
 
 
 class GetParam(function.Function):
@@ -112,11 +117,13 @@ class GetAtt(cfn_funcs.GetAtt):
         return tuple(self.args[:2])
 
     def result(self):
+        logger.debug(_(" hot functions result start   " ))
         attribute = super(GetAtt, self).result()
         if attribute is None:
             return None
-
+        logger.debug(_(" hot functions resolve path components start  %s" % self._path_components ))
         path_components = function.resolve(self._path_components)
+        logger.debug(_(" hot functions resolve path components end  %s" % path_components ))
 
         def get_path_component(collection, key):
             if not isinstance(collection, (collections.Mapping,

@@ -14,7 +14,11 @@
 
 import abc
 import collections
+from heat.openstack.common.gettextutils import _
 
+from heat.openstack.common import log as logging
+
+logger = logging.getLogger(__name__)
 
 class Function(object):
     """
@@ -100,13 +104,19 @@ class Function(object):
 
 
 def resolve(snippet):
+    logger.debug(_("resolve snippet start %s  " % snippet))
     while isinstance(snippet, Function):
+        logger.debug(_("resolve snippet start %s  " % snippet))
         snippet = snippet.result()
+        logger.debug(_("resolve snippet end %s  " % snippet))
 
     if isinstance(snippet, collections.Mapping):
+        logger.debug(_("resolve snippet is a map ends %s  " % snippet))
         return dict((k, resolve(v)) for k, v in snippet.items())
     elif (not isinstance(snippet, basestring) and
           isinstance(snippet, collections.Iterable)):
+        logger.debug(_("resolve snippet end is a string or list %s  " % snippet))
         return [resolve(v) for v in snippet]
+    logger.debug(_("resolve snippet end %s  " % snippet))
 
     return snippet

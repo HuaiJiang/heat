@@ -14,7 +14,7 @@
 
 import functools
 import json
-
+import eventlet
 from oslo.config import cfg
 import webob
 
@@ -189,6 +189,7 @@ class StackWatch(object):
                 stack_id,
                 self.periodic_watcher_task,
                 sid=stack_id)
+        logger.debug(_("check stack watch task %s" % stack_id))
 
     def check_stack_watches(self, sid):
         # Retrieve the stored credentials & create context
@@ -294,9 +295,14 @@ class EngineService(service.Service):
 
         # Create a periodic_watcher_task per-stack
         admin_context = context.get_admin_context()
-        stacks = db_api.stack_get_all(admin_context, tenant_safe=False)
-        for s in stacks:
-            self.stack_watch.start_watch_task(s.id, admin_context)
+        while True:
+            print "This prints once a minute."
+            eventlet.sleep(60)  # Delay for 1 minute (60 seconds)
+
+            # stacks = db_api.stack_get_all(admin_context, tenant_safe=False)
+            # for s in stacks:
+            #   self.stack_watch.start_watch_task(s.id, admin_context)
+            # logger.debug(_("finish start stack watch tasks"))
 
     @staticmethod
     def load_user_creds(creds_id):
@@ -327,6 +333,7 @@ class EngineService(service.Service):
             s = db_api.stack_get_by_name(cnxt, stack_name)
         if s:
             stack = parser.Stack.load(cnxt, stack=s)
+            logger.debug(_("identify stack  %s ") % (stack.name))
             return dict(stack.identifier())
         else:
             raise exception.StackNotFound(stack_name=stack_name)
@@ -366,6 +373,8 @@ class EngineService(service.Service):
 
         def format_stack_detail(s):
             stack = parser.Stack.load(cnxt, stack=s)
+            logger.debug(_("show_stack  %s ") % (stack.name))
+
             return api.format_stack(stack)
 
         return [format_stack_detail(s) for s in stacks]
@@ -402,7 +411,6 @@ class EngineService(service.Service):
                     pass
                 else:
                     yield api.format_stack(stack)
-
         stacks = db_api.stack_get_all(cnxt, limit, sort_keys, marker,
                                       sort_dir, filters, tenant_safe) or []
         return list(format_stack_details(stacks))
